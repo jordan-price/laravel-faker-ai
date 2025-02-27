@@ -1,0 +1,42 @@
+{
+    "name": "jordan-price/laravel-faker-ai",
+    "description": "Laravel package that extends FakerPHP with AI-powered data generation",
+    "keywords": ["laravel", "faker", "ai", "fake data", "seeder"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jordan Price",
+            "email": "jordan@bestie.ai"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "fakerphp/faker": "^1.9.1",
+        "illuminate/support": "^9.0|^10.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0",
+        "phpunit/phpunit": "^10.0",
+        "mockery/mockery": "^1.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "JordanPrice\\LaravelFakerAI\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "JordanPrice\\LaravelFakerAI\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "JordanPrice\\LaravelFakerAI\\FakerAIServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
