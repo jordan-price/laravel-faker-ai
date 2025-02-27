@@ -7,7 +7,7 @@ A Laravel package that extends FakerPHP by adding an AI-powered data generator u
 Install the package via Composer:
 
 ```bash
-composer require yournamespace/laravel-faker-ai
+composer require jordan-price/laravel-faker-ai
 ```
 
 The package will automatically register its service provider if you're using Laravel's package auto-discovery.
@@ -38,6 +38,85 @@ FAKER_MISTRAL_MODEL=mistral-tiny
 FAKER_AI_ENABLE_CACHE=true
 FAKER_AI_CACHE_TTL=1440
 ```
+
+### Setting up Ollama Integration
+
+This package provides built-in support for [Ollama](https://ollama.ai), allowing you to run AI models locally without relying on external APIs.
+
+#### Prerequisites for Ollama
+
+1. **Install Ollama**: Download and install from [ollama.ai](https://ollama.ai)
+2. **Start the Ollama service**: Ensure it's running at `http://localhost:11434`
+3. **Download a model**: Using the Ollama CLI, download a suitable model:
+   ```bash
+   ollama pull llama3
+   ```
+
+#### Required dependencies
+
+Make sure you have the Prism package installed:
+
+```bash
+composer require echolabsdev/prism
+```
+
+#### Ollama Configuration
+
+Set these environment variables in your `.env` file:
+
+```
+FAKER_AI_PROVIDER=ollama
+FAKER_OLLAMA_MODEL=llama3
+FAKER_AI_ENABLE_CACHE=true
+FAKER_AI_CACHE_TTL=1440
+```
+
+You can check available models on your Ollama instance with:
+
+```bash
+ollama list
+```
+
+#### Testing the Ollama Integration
+
+To verify that Ollama is working correctly with your application:
+
+```php
+// Create a simple test
+$productName = fake()->promptAI('productName', context: [
+    'product_type' => 'technology',
+    'industry' => 'consumer electronics'
+]);
+
+echo "Generated product name: " . $productName;
+```
+
+#### Troubleshooting Ollama
+
+If you encounter issues:
+
+1. **Verify Ollama is running**: 
+   ```bash
+   curl http://localhost:11434/api/tags
+   ```
+
+2. **Check model availability**:
+   ```bash
+   ollama list
+   ```
+
+3. **Test direct API access**:
+   ```bash
+   curl -X POST http://localhost:11434/api/generate -d '{
+     "model": "llama3",
+     "prompt": "Generate a name for a smartphone"
+   }'
+   ```
+
+4. **Enable debug logging** in your Laravel application:
+   ```
+   LOG_LEVEL=debug
+   ```
 
 ## Usage
 
@@ -359,7 +438,25 @@ class BrandFactory extends Factory
 }
 ```
 
-#### Simple Product Factory
+### Comparing AI Provider Options
+
+| Provider  | Advantages                     | Considerations                               | Use Case                         |
+|-----------|--------------------------------|----------------------------------------------|----------------------------------|
+| Ollama    | - Free to use                  | - Requires local installation                | - Development & testing          |
+|           | - Private, no data sharing     | - Limited by local compute resources         | - Privacy-sensitive applications  |
+|           | - No API keys needed           | - Model quality may vary                     | - Offline development            |
+|           | - Works offline                |                                              |                                  |
+| OpenAI    | - High quality results         | - Requires API key                           | - Production applications        |
+|           | - Best model availability      | - Cost based on usage                        | - When quality is critical       |
+|           | - Fast response times          | - Data sent to external servers              |                                  |
+| Anthropic | - Excellent context handling   | - Requires API key                           | - Complex data generation        |
+|           | - Strong in complex reasoning  | - Higher cost than some alternatives         | - Nuanced content                |
+|           | - Long context windows         | - Data sent to external servers              |                                  |
+| Mistral   | - Good balance of quality/cost | - Requires API key                           | - Budget-conscious production    |
+|           | - European-based alternative   | - Smaller model selection than OpenAI        | - EU data compliance needs       |
+|           | - Strong multilingual support  | - Data sent to external servers              |                                  |
+
+### Simple Product Factory
 
 ```php
 <?php
@@ -628,6 +725,38 @@ return [
     // ...
 ];
 ```
+
+### Performance Considerations with Ollama
+
+When using Ollama for local AI generation, keep these performance tips in mind:
+
+1. **Enable Caching**: Always enable caching to avoid repeatedly generating the same content.
+   ```
+   FAKER_AI_ENABLE_CACHE=true
+   FAKER_AI_CACHE_TTL=1440  # 24 hours in minutes
+   ```
+
+2. **Choose the Right Model Size**: Smaller models will be significantly faster:
+   - For simple text generation, try `llama3:7b` instead of larger variants
+   - For development, smaller models are usually sufficient
+   - For production quality, larger models may be worth the performance cost
+
+3. **Batch Generation**: When seeding databases, use the factory's batch methods rather than creating models one by one.
+   ```php
+   // More efficient - generates all models in batches
+   Product::factory()->count(50)->create();
+   
+   // Less efficient - generates each model separately
+   for ($i = 0; $i < 50; $i++) {
+       Product::factory()->create();
+   }
+   ```
+
+4. **Hardware Considerations**: Ollama's performance depends on your local hardware:
+   - CPU-only generation will be significantly slower than with a GPU
+   - Consider using cloud providers for large-scale generation if you don't have a GPU
+
+5. **Parallel Processing**: For large datasets, consider using Laravel's queue system with multiple workers to parallelize generation.
 
 ## Testing
 

@@ -116,6 +116,12 @@ class FakerAIPromptProvider extends Base
 
             $result = trim($response->text);
 
+            // Strip quotes from the beginning and end of the response
+            if ((str_starts_with($result, '"') && str_ends_with($result, '"')) || 
+                (str_starts_with($result, "'") && str_ends_with($result, "'"))) {
+                $result = substr($result, 1, -1);
+            }
+
             // Cache the result if caching is enabled
             if (($config['enable_cache'] ?? false) && method_exists(Cache::class, 'put')) {
                 $ttl = $config['cache_ttl'] ?? 60;
