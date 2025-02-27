@@ -801,7 +801,7 @@ This package is open-sourced software licensed under the [MIT license](https://o
 
 ## Credits
 
-- Created by [Your Name]
+- Created by Jordan Price
 - Documentation and README improvements by the community
 
 ## Support
